@@ -29,7 +29,7 @@
 --]]
 
 -- ── LOAD WINDUI ───────────────────────────────────────────────────────────
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/mhankbe/WindUi/refs/heads/main/dist/main.lua"))()
 
 -- ── WINDOW (+ floating minimize bubble, sudah teruji OK) ────────────────
 local Window = WindUI:CreateWindow({
