@@ -620,13 +620,19 @@ d.Heartbeat
 
 local l="https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua"
 
+-- [FLa DEBUG] notif visual, tidak perlu buka console
+local _FLaSG=game:GetService("StarterGui")
+local function _FLaNotify(msg)
+pcall(function()
+_FLaSG:SetCore("SendNotification",{Title="FLa DEBUG",Text=msg,Duration=6})
+end)
+end
+
 local m
 if d:IsStudio()or not writefile then
-warn("[FLa DEBUG] Studio atau writefile tidak ada -> pakai a.load('b') internal")
+_FLaNotify("Studio/no writefile -> internal load")
 m=a.load'b'
 else
--- [PATCH-DEBUG] Cache icon database lokal, dengan logging supaya ketahuan
--- kalau ada yang gagal (folder, permission, dsb) di executor tertentu.
 local _iconCacheFolder="FLa_Cache"
 local _iconCachePath="FLa_Cache/WindUI_Icons_Main-v2.lua"
 local _iconSrc
@@ -634,42 +640,39 @@ local _iconSrc
 local _readOk,_readErr=pcall(function()
 if isfile and isfile(_iconCachePath) then
 _iconSrc=readfile(_iconCachePath)
-warn("[FLa DEBUG] Cache ditemukan, panjang: "..tostring(#(_iconSrc or "")))
+_FLaNotify("Cache DITEMUKAN, panjang: "..tostring(#(_iconSrc or "")))
 else
-warn("[FLa DEBUG] Cache TIDAK ditemukan di path: ".._iconCachePath)
+_FLaNotify("Cache TIDAK ditemukan di: ".._iconCachePath)
 end
 end)
 if not _readOk then
-warn("[FLa DEBUG] Gagal baca cache, error: "..tostring(_readErr))
+_FLaNotify("Gagal baca cache: "..tostring(_readErr))
 end
 
 if not _iconSrc or _iconSrc=="" then
-warn("[FLa DEBUG] Fetch icon dari GitHub (bukan dari cache)...")
+_FLaNotify("Fetch icon dari GitHub...")
 local ok,fetched=pcall(function()
 return game.HttpGet and game:HttpGet(l)or h:GetAsync(l)
 end)
 if ok and fetched and fetched~="" then
 _iconSrc=fetched
-warn("[FLa DEBUG] Fetch sukses, panjang: "..tostring(#fetched)..". Mencoba simpan ke cache...")
+_FLaNotify("Fetch sukses, panjang: "..tostring(#fetched)..". Simpan cache...")
 local _writeOk,_writeErr=pcall(function()
 if makefolder and not (isfolder and isfolder(_iconCacheFolder)) then
 makefolder(_iconCacheFolder)
-warn("[FLa DEBUG] Folder dibuat: ".._iconCacheFolder)
 end
 if writefile then
 writefile(_iconCachePath,fetched)
-warn("[FLa DEBUG] writefile dipanggil ke: ".._iconCachePath)
 end
 end)
 if not _writeOk then
-warn("[FLa DEBUG] GAGAL simpan cache! Error: "..tostring(_writeErr))
+_FLaNotify("GAGAL simpan cache: "..tostring(_writeErr))
 else
--- verifikasi langsung setelah nulis
 local _verifyOk,_verifyExists=pcall(function() return isfile and isfile(_iconCachePath) end)
-warn("[FLa DEBUG] Verifikasi file ada setelah write: "..tostring(_verifyOk and _verifyExists))
+_FLaNotify("Verifikasi file ada setelah write: "..tostring(_verifyOk and _verifyExists))
 end
 else
-warn("[FLa DEBUG] Fetch GAGAL! ok="..tostring(ok).." err/data="..tostring(fetched))
+_FLaNotify("Fetch GAGAL! ok="..tostring(ok).." data="..tostring(fetched))
 end
 end
 m=loadstring(_iconSrc)()
