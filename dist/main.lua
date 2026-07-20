@@ -620,44 +620,27 @@ d.Heartbeat
 
 local l="https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua"
 
--- [FLa DEBUG] notif visual, tidak perlu buka console
-local _FLaSG=game:GetService("StarterGui")
-local function _FLaNotify(msg)
-pcall(function()
-_FLaSG:SetCore("SendNotification",{Title="FLa DEBUG",Text=msg,Duration=6})
-end)
-end
-
 local m
 if d:IsStudio()or not writefile then
-_FLaNotify("Studio/no writefile -> internal load")
 m=a.load'b'
 else
 local _iconCacheFolder="FLa_Cache"
 local _iconCachePath="FLa_Cache/WindUI_Icons_Main-v2.lua"
 local _iconSrc
 
-local _readOk,_readErr=pcall(function()
+pcall(function()
 if isfile and isfile(_iconCachePath) then
 _iconSrc=readfile(_iconCachePath)
-_FLaNotify("Cache DITEMUKAN, panjang: "..tostring(#(_iconSrc or "")))
-else
-_FLaNotify("Cache TIDAK ditemukan di: ".._iconCachePath)
 end
 end)
-if not _readOk then
-_FLaNotify("Gagal baca cache: "..tostring(_readErr))
-end
 
 if not _iconSrc or _iconSrc=="" then
-_FLaNotify("Fetch icon dari GitHub...")
 local ok,fetched=pcall(function()
 return game.HttpGet and game:HttpGet(l)or h:GetAsync(l)
 end)
 if ok and fetched and fetched~="" then
 _iconSrc=fetched
-_FLaNotify("Fetch sukses, panjang: "..tostring(#fetched)..". Simpan cache...")
-local _writeOk,_writeErr=pcall(function()
+pcall(function()
 if makefolder and not (isfolder and isfolder(_iconCacheFolder)) then
 makefolder(_iconCacheFolder)
 end
@@ -665,14 +648,6 @@ if writefile then
 writefile(_iconCachePath,fetched)
 end
 end)
-if not _writeOk then
-_FLaNotify("GAGAL simpan cache: "..tostring(_writeErr))
-else
-local _verifyOk,_verifyExists=pcall(function() return isfile and isfile(_iconCachePath) end)
-_FLaNotify("Verifikasi file ada setelah write: "..tostring(_verifyOk and _verifyExists))
-end
-else
-_FLaNotify("Fetch GAGAL! ok="..tostring(ok).." data="..tostring(fetched))
 end
 end
 m=loadstring(_iconSrc)()
