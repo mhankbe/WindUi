@@ -622,32 +622,54 @@ local l="https://raw.githubusercontent.com/Footagesus/Icons/main/Main-v2.lua"
 
 local m
 if d:IsStudio()or not writefile then
+warn("[FLa DEBUG] Studio atau writefile tidak ada -> pakai a.load('b') internal")
 m=a.load'b'
 else
--- [PATCH] Cache icon database lokal supaya tidak HttpGet ulang tiap execute.
--- File dicek dulu; kalau sudah ada & belum lewat 7 hari, langsung pakai cache.
--- Kalau belum ada / sudah kadaluarsa / gagal baca, baru fetch dari GitHub.
+-- [PATCH-DEBUG] Cache icon database lokal, dengan logging supaya ketahuan
+-- kalau ada yang gagal (folder, permission, dsb) di executor tertentu.
+local _iconCacheFolder="FLa_Cache"
 local _iconCachePath="FLa_Cache/WindUI_Icons_Main-v2.lua"
 local _iconSrc
-pcall(function()
+
+local _readOk,_readErr=pcall(function()
 if isfile and isfile(_iconCachePath) then
 _iconSrc=readfile(_iconCachePath)
+warn("[FLa DEBUG] Cache ditemukan, panjang: "..tostring(#(_iconSrc or "")))
+else
+warn("[FLa DEBUG] Cache TIDAK ditemukan di path: ".._iconCachePath)
 end
 end)
+if not _readOk then
+warn("[FLa DEBUG] Gagal baca cache, error: "..tostring(_readErr))
+end
+
 if not _iconSrc or _iconSrc=="" then
+warn("[FLa DEBUG] Fetch icon dari GitHub (bukan dari cache)...")
 local ok,fetched=pcall(function()
 return game.HttpGet and game:HttpGet(l)or h:GetAsync(l)
 end)
 if ok and fetched and fetched~="" then
 _iconSrc=fetched
-pcall(function()
-if makefolder and not (isfolder and isfolder("FLa_Cache")) then
-makefolder("FLa_Cache")
+warn("[FLa DEBUG] Fetch sukses, panjang: "..tostring(#fetched)..". Mencoba simpan ke cache...")
+local _writeOk,_writeErr=pcall(function()
+if makefolder and not (isfolder and isfolder(_iconCacheFolder)) then
+makefolder(_iconCacheFolder)
+warn("[FLa DEBUG] Folder dibuat: ".._iconCacheFolder)
 end
 if writefile then
 writefile(_iconCachePath,fetched)
+warn("[FLa DEBUG] writefile dipanggil ke: ".._iconCachePath)
 end
 end)
+if not _writeOk then
+warn("[FLa DEBUG] GAGAL simpan cache! Error: "..tostring(_writeErr))
+else
+-- verifikasi langsung setelah nulis
+local _verifyOk,_verifyExists=pcall(function() return isfile and isfile(_iconCachePath) end)
+warn("[FLa DEBUG] Verifikasi file ada setelah write: "..tostring(_verifyOk and _verifyExists))
+end
+else
+warn("[FLa DEBUG] Fetch GAGAL! ok="..tostring(ok).." err/data="..tostring(fetched))
 end
 end
 m=loadstring(_iconSrc)()
