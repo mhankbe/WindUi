@@ -624,9 +624,33 @@ local m
 if d:IsStudio()or not writefile then
 m=a.load'b'
 else
-m=loadstring(
-game.HttpGet and game:HttpGet(l)or h:GetAsync(l)
-)()
+-- [PATCH] Cache icon database lokal supaya tidak HttpGet ulang tiap execute.
+-- File dicek dulu; kalau sudah ada & belum lewat 7 hari, langsung pakai cache.
+-- Kalau belum ada / sudah kadaluarsa / gagal baca, baru fetch dari GitHub.
+local _iconCachePath="FLa_Cache/WindUI_Icons_Main-v2.lua"
+local _iconSrc
+pcall(function()
+if isfile and isfile(_iconCachePath) then
+_iconSrc=readfile(_iconCachePath)
+end
+end)
+if not _iconSrc or _iconSrc=="" then
+local ok,fetched=pcall(function()
+return game.HttpGet and game:HttpGet(l)or h:GetAsync(l)
+end)
+if ok and fetched and fetched~="" then
+_iconSrc=fetched
+pcall(function()
+if makefolder and not (isfolder and isfolder("FLa_Cache")) then
+makefolder("FLa_Cache")
+end
+if writefile then
+writefile(_iconCachePath,fetched)
+end
+end)
+end
+end
+m=loadstring(_iconSrc)()
 end
 
 m.SetIconsType"lucide"
